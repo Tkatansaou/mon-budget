@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budget Personnel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <h1>Budget Personnel</h1>
+      <div class="header-controls">
+        <select id="select-devise" aria-label="Devise">
+          <option value="FCFA">FCFA</option>
+          <option value="EUR">EUR €</option>
+          <option value="USD">USD $</option>
+          <option value="GBP">GBP £</option>
+          <option value="GHS">GHS ₵</option>
+          <option value="NGN">NGN ₦</option>
+        </select>
+        <button id="btn-ajouter" class="btn btn-primary">+ Ajouter</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Tableau de bord KPI -->
+    <section id="dashboard">
+      <div class="kpi-card kpi-solde">
+        <span class="kpi-label">Solde actuel</span>
+        <span id="kpi-solde-val" class="kpi-value">0,00 €</span>
+      </div>
+      <div class="kpi-card kpi-revenus">
+        <span class="kpi-label">Total revenus</span>
+        <span id="kpi-revenus-val" class="kpi-value kpi-green">0,00 €</span>
+      </div>
+      <div class="kpi-card kpi-depenses">
+        <span class="kpi-label">Total dépenses</span>
+        <span id="kpi-depenses-val" class="kpi-value kpi-red">0,00 €</span>
+      </div>
+    </section>
+
+    <!-- Graphique répartition -->
+    <section id="chart-section">
+      <h2>Répartition des dépenses</h2>
+      <div id="chart-container">
+        <div class="chart-wrap">
+          <svg id="chart-svg" viewBox="0 0 200 200" width="180" height="180" aria-hidden="true"></svg>
+        </div>
+        <div id="chart-legend"></div>
+      </div>
+      <p id="chart-empty" class="chart-empty">Aucune dépense à afficher.</p>
+    </section>
+
+    <!-- Historique -->
+    <section id="history-section">
+      <h2>Historique</h2>
+      <div class="filters">
+        <select id="select-type" aria-label="Filtrer par type">
+          <option value="">Tous les types</option>
+          <option value="revenu">Revenus</option>
+          <option value="depense">Dépenses</option>
+        </select>
+        <select id="select-categorie" aria-label="Filtrer par catégorie">
+          <option value="">Toutes les catégories</option>
+          <option value="alimentation">Alimentation</option>
+          <option value="logement">Logement</option>
+          <option value="transport">Transport</option>
+          <option value="loisirs">Loisirs</option>
+          <option value="sante">Santé</option>
+          <option value="autres">Autres</option>
+        </select>
+        <select id="select-periode" aria-label="Filtrer par période">
+          <option value="">Toute la période</option>
+          <option value="7">7 derniers jours</option>
+          <option value="30">30 derniers jours</option>
+          <option value="90">3 derniers mois</option>
+          <option value="365">Cette année</option>
+        </select>
+      </div>
+
+      <div id="history-empty" class="empty-state">
+        <p class="empty-icon">—</p>
+        <p>Aucune transaction pour le moment.</p>
+        <p>Cliquez sur <strong>+ Ajouter</strong> pour commencer.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th class="col-cat">Catégorie</th>
+              <th>Type</th>
+              <th>Montant</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal formulaire ajout / édition -->
+  <div id="modal-form" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-form-titre">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-form-titre">Nouvelle transaction</h2>
+        <button class="btn-close" id="btn-fermer-form" aria-label="Fermer">&times;</button>
+      </div>
+      <form id="form-transaction" novalidate>
+        <div class="form-group">
+          <span class="form-label">Type</span>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="type" value="depense" checked />
+              <span class="radio-mark"></span>
+              Dépense
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="type" value="revenu" />
+              <span class="radio-mark"></span>
+              Revenu
+            </label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" id="label-montant" for="input-montant">Montant</label>
+            <input type="number" id="input-montant" min="0.01" step="0.01" placeholder="0,00" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="input-date">Date</label>
+            <input type="date" id="input-date" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="select-form-cat">Catégorie</label>
+          <select id="select-form-cat" required>
+            <option value="">— Choisir —</option>
+            <option value="alimentation">Alimentation</option>
+            <option value="logement">Logement</option>
+            <option value="transport">Transport</option>
+            <option value="loisirs">Loisirs</option>
+            <option value="sante">Santé</option>
+            <option value="autres">Autres</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-description">
+            Description <span class="form-optional">(optionnel)</span>
+          </label>
+          <input type="text" id="input-description" placeholder="Ex : courses du weekend" maxlength="100" />
+        </div>
+        <p id="form-error" class="form-error" role="alert"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-annuler-form">Annuler</button>
+          <button type="submit" class="btn btn-primary">Sauvegarder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal confirmation suppression -->
+  <div id="modal-confirm" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box--sm">
+      <div class="modal-header">
+        <h2>Supprimer la transaction</h2>
+        <button class="btn-close" id="btn-fermer-confirm" aria-label="Fermer">&times;</button>
+      </div>
+      <p class="confirm-msg">Cette action est irréversible. Voulez-vous vraiment supprimer cette transaction ?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btn-annuler-confirm">Annuler</button>
+        <button class="btn btn-danger" id="btn-confirmer-suppr">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -30,7 +30,7 @@ Application web de gestion de budget personnel permettant à l'utilisateur d'enr
 |---|---|---|
 | `alimentation` | Alimentation | Orange `#f97316` |
 | `logement` | Logement | Bleu `#3b82f6` |
-| `transport` | Transport | Bleu ciel `#0ea5e9` |
+| `transport` | Transport | Violet `#8b5cf6` |
 | `loisirs` | Loisirs | Rose `#ec4899` |
 | `sante` | Santé | Vert `#10b981` |
 | `autres` | Autres | Gris `#94a3b8` |
@@ -100,8 +100,51 @@ Plateformes/
 - Tout le texte affiché est en **français**
 - Pas de commentaires sauf logique non évidente
 
+## Dépôt GitHub
+- **URL** : https://github.com/Tkatansaou/budget-personnel
+- **Compte** : Tkatansaou
+- **Branche principale** : `main`
+- Premier commit : `0e6c3c9` — "feat: init budget personnel app"
+
+### Workflow Git (session initiale)
+```bash
+# GitHub CLI — chemin complet requis (pas dans PATH par défaut après winget)
+$env:PATH += ";C:\Program Files\GitHub CLI"
+gh auth login   # authentification via navigateur (code one-time)
+
+# Init local
+git init
+git add index.html style.css app.js CLAUDE.md .gitignore .claude/launch.json
+git commit -m "feat: init budget personnel app"
+
+# Remote & push
+gh repo create budget-personnel --public --source=. --remote=origin --push
+```
+
 ## Serveur de développement
 ```bash
 npx serve -p 3456 .
 ```
 Accessible sur `http://localhost:3456` — nom dans launch.json : `budget-app`
+
+## Incohérences connues
+
+### Couleur Transport (CSS vs JS)
+Le badge HTML dans l'historique utilise les variables CSS de la catégorie transport :
+- `--cat-transport-bg: #e0f2fe` (bleu ciel clair)
+- `--cat-transport-text: #0369a1` (bleu foncé)
+- `--cat-transport-dot: #0ea5e9` (bleu ciel)
+
+Mais la constante JS `COULEURS.transport` vaut `#8b5cf6` (violet), utilisée dans le donut SVG.
+
+→ Le badge affiché dans le tableau est **bleu**, le segment du graphique est **violet**.
+
+## Bugs connus (revue de code)
+
+| # | Sévérité | Description |
+|---|---|---|
+| 1 | Moyenne | **Graphique non mis à jour** : ajouter une dépense "Transport" met à jour le solde mais pas le donut SVG (bug à investiguer dans `dessinerGraphique`) |
+| 2 | Faible | `input[type=number][step]` non mis à jour pour FCFA (step reste à 0.01 au lieu de 1) |
+| 3 | Faible | Aucun `try/catch` sur `localStorage.setItem` — peut planter silencieusement si quota dépassé |
+| 4 | Faible | Arithmétique flottante non arrondie : `calcSolde()` peut produire `1500.0000000001` |
+| 5 | Info | `repartitionParCategorie` recalcule à chaque appel au lieu d'utiliser un cache |
